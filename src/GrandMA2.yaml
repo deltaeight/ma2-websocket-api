@@ -1,0 +1,229 @@
+asyncapi: "2.0.0"
+
+defaultContentType: application/json
+
+info:
+  title: GrandMA 2 Websockets API
+  version: "3.7.0"
+  description: The GrandMA 2 Websockets API is the API used by the web remote.
+
+servers:
+  production:
+    url: "ws://{deskIp}"
+    description: The GrandMA 2 console software
+    protocol: WebSocket
+    variables:
+      deskIp:
+        default: 192.168.0.1
+        description: The IP of the desk we want to control.
+
+channels:
+  /?ma=1:
+    subscribe:
+      message:
+        oneOf:
+          - $ref: "#/components/messages/serverReady"
+          - $ref: "#/components/messages/sessionInformation"
+          - $ref: "#/components/messages/dataResponse"
+          - $ref: "#/components/messages/loginResponse"
+    publish:
+      message:
+        oneOf:
+          - $ref: "#/components/messages/session"
+          - $ref: "#/components/messages/dataRequest"
+          - $ref: "#/components/messages/loginRequest"
+          - $ref: "#/components/messages/closeConnection"
+
+components:
+  messages:
+    serverReady:
+      name: serverReady
+      description: Emitted by the desk when it is ready for commands
+      payload:
+        type: object
+        additionalProperties: false
+        required:
+          - status
+          - appType
+        properties:
+          status:
+            type: string
+            enum:
+              - "server ready"
+          appType:
+            type: string
+            enum:
+              - "gma2"
+    sessionInformation:
+      name: sessionInformation
+      description: Unsure
+      payload:
+        type: object
+        additionalProperties: false
+        required:
+          - realtime
+          - session
+          - forceLogin
+          - worldIndex
+        properties:
+          realtime:
+            type: boolean
+          session:
+            type: integer
+            minimum: 0
+          forceLogin:
+            type: boolean
+          worldIndex:
+            type: integer
+            minimum: 0
+    dataResponse:
+      name: dataResponse
+      description: The desk responding to `dataRequest`
+      payload:
+        type: object
+        additionalProperties: false
+        required:
+          - realtime
+          - responseType
+          - data
+          - worldIndex
+        properties:
+          realtime:
+            type: boolean
+          responseType:
+            type: string
+            enum:
+              - "getdata"
+          data:
+            type: array
+            items:
+              description: Property keys follow along to the requested data field keys.
+              type: object
+              additionalProperties: false
+              patternProperties:
+                "^.+$":
+                  type: string
+          worldIndex:
+            type: integer
+            minimum: 0
+          prompt:
+            description: The prompt used by the desk shell.
+            type: string
+            default: "[Channel]>"
+          promptcolor:
+            type: string
+            default: "#808080"
+    loginResponse:
+      name: loginResponse
+      description: The desk responding to `loginRequest`
+      payload:
+        type: object
+        additionalProperties: false
+        required:
+          - realtime
+          - responseType
+          - result
+          - worldIndex
+        properties:
+          realtime:
+            type: boolean
+          responseType:
+            type: string
+            enum:
+              - login
+          result:
+            type: boolean
+          worldIndex:
+            type: integer
+            minimum: 0
+    session:
+      name: session
+      description: Unsure
+      payload:
+        type: object
+        additionalProperties: false
+        required:
+          - session
+        properties:
+          session:
+            type: integer
+            minimum: 0
+    dataRequest:
+      name: dataRequest
+      payload:
+        type: object
+        additionalProperties: false
+        required:
+          - requestType
+          - data
+          - maxRequests
+          - session
+        properties:
+          requestType:
+            type: string
+            enum:
+              - "getdata"
+          data:
+            description: |
+              The data fields to query from the desk.
+              Looks like MA is not following standards here, because this is not an array with data field keys but a
+              concatenated string like `"set,clear,solo,high"`.
+            type: string
+          maxRequests:
+            description: Unsure
+            type: integer
+            minimum: 1
+          session:
+            type: integer
+            minimum: 0
+    loginRequest:
+      name: loginRequest
+      payload:
+        type: object
+        additionalProperties: false
+        required:
+          - requestType
+          - username
+          - password
+          - session
+          - maxRequests
+        properties:
+          requestType:
+            type: string
+            enum:
+              - "login"
+          username:
+            type: string
+          password:
+            description: MD5 hash of user's password.
+            type: string
+            pattern: "^[0-9a-zA-Z]{32}$"
+          session:
+            type: integer
+            minimum: 0
+          maxRequests:
+            decription: Unsure
+            type: integer
+            minimum: 1
+    closeConnection:
+      name: closeConnection
+      description: Tells the desk that the WebSocket should be closed
+      payload:
+        type: object
+        additionalProperties: false
+        required:
+          - requestType
+          - session
+          - maxRequests
+        properties:
+          requestType:
+            type: string
+            enum:
+              - "close"
+          session:
+            type: integer
+            minimum: 0
+          maxRequests:
+            description: Unsure
+            type: integer
+            minimum: 1
