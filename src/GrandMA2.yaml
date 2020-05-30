@@ -9,7 +9,7 @@ info:
 
 servers:
   production:
-    url: "ws://{deskIp}"
+    url: "{deskIp}/?ma=1"
     description: The GrandMA 2 console software
     protocol: ws
     variables:
@@ -18,11 +18,11 @@ servers:
         description: The IP of the desk we want to control.
 
 channels:
-  /?ma=1:
+  /:
     subscribe:
       message:
         oneOf:
-          - $ref: "#/components/messages/serverReady"
+          - $ref: "#/components/messages/serverStatus"
           - $ref: "#/components/messages/sessionInformation"
           - $ref: "#/components/messages/dataResponse"
           - $ref: "#/components/messages/loginResponse"
@@ -36,9 +36,8 @@ channels:
 
 components:
   messages:
-    serverReady:
-      name: serverReady
-      description: Emitted by the desk when it is ready for commands
+    serverStatus:
+      name: serverStatus
       payload:
         type: object
         additionalProperties: false
