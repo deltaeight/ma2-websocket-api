@@ -11,7 +11,7 @@ servers:
   production:
     url: "ws://{deskIp}"
     description: The GrandMA 2 console software
-    protocol: WebSocket
+    protocol: ws
     variables:
       deskIp:
         default: 192.168.0.1
