@@ -1,5 +1,7 @@
 # GrandMA 2 websocket API
 
+**Still developing!**
+
 This is a documentation using [AsyncAPI](https://www.asyncapi.com) of the 
 [GrandMA 2](https://www.malighting.com/grandma2/) websocket API.
 
